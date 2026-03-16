@@ -22,7 +22,7 @@ const ControlSidebar = ({ categories, selectedCategory, onSelectCategory, select
                         <button
                             key={action.id}
                             onClick={action.onClick}
-                            className={`h-12 border-2 border-gray-400 bg-white text-[10px] font-black uppercase leading-tight px-2 rounded-lg shadow-sm transition-all ${action.onClick && !selectedCartItemId ? 'opacity-30 cursor-not-allowed' : 'hover:bg-blue-50 hover:border-blue-400 active:scale-95'
+                            className={`h-8 border border-gray-400 bg-white text-[9px] font-black uppercase leading-tight px-1 rounded shadow-sm transition-all flex items-center justify-center ${action.onClick && !selectedCartItemId ? 'opacity-30 cursor-not-allowed' : 'hover:bg-red-50 hover:border-red-400 active:scale-95'
                                 } ${action.color || 'text-gray-800'}`}
                             disabled={action.onClick && !selectedCartItemId}
                         >
@@ -31,11 +31,11 @@ const ControlSidebar = ({ categories, selectedCategory, onSelectCategory, select
                     ))}
                 </div>
 
-                <div className="space-y-1 mb-2">
+                <div className="flex gap-1 mb-2">
                     {qtyActions.map(action => (
                         <button
                             key={action.id}
-                            className={`w-full h-14 border-2 border-blue-200 text-xl font-black shadow-md rounded-xl transition-all ${!selectedCartItemId ? 'opacity-30 cursor-not-allowed' : 'bg-white hover:bg-blue-600 hover:text-white hover:border-blue-700 active:scale-90 text-blue-900'
+                            className={`flex-[1] h-8 border border-blue-200 text-xs font-black shadow-sm rounded transition-all flex items-center justify-center ${!selectedCartItemId ? 'opacity-30 cursor-not-allowed' : 'bg-white hover:bg-blue-600 hover:text-white hover:border-blue-700 active:scale-95 text-blue-900'
                                 }`}
                             onClick={() => selectedCartItemId && onUpdateQty(selectedCartItemId, action.id === 'plus' ? 1 : -1)}
                             disabled={!selectedCartItemId}

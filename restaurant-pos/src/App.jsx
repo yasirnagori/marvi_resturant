@@ -325,6 +325,8 @@ function App() {
       {/* Global Action Footer */}
       {activeTab === "Open Orders" && (
         <div className="h-14 bg-gray-800 border-t border-gray-700 flex items-center justify-between px-4 gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+          <div></div>{/* Spacer for justify-between */}
+
           <div className="flex items-center gap-2">
             <button
               onClick={handleNewOrder}
@@ -332,17 +334,6 @@ function App() {
             >
               New Order
             </button>
-            <div className="flex items-center gap-1 ml-2 relative">
-              <button
-                className="h-10 px-4 bg-blue-800 text-white font-bold rounded-lg border border-blue-700 hover:bg-blue-700 text-xs transition-colors"
-                onClick={() => alert("Payment Process Started...")}
-              >
-                PAYMENT
-              </button>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
             <button
               onClick={() => {
                 alert("Printing Bill...");
@@ -381,7 +372,20 @@ function App() {
               CLOSE ORDER
             </button>
             <button
-              onClick={() => { if (confirm("Clear current order?")) { setCartItems([]); setOrderType(null); setSelectedRider(null); setSelectedWaiter(null); setCustomerInfo(null); } }}
+              onClick={() => { 
+                if (confirm("Clear current order?")) { 
+                  if (activeOrderId === dailyOrderCount && typeof activeOrderId === 'number') {
+                     setDailyOrderCount(prev => Math.max(0, prev - 1));
+                  }
+                  setCartItems([]); 
+                  setOrderType(null); 
+                  setActiveOrderId(null);
+                  setStartTime(null);
+                  setSelectedRider(null); 
+                  setSelectedWaiter(null); 
+                  setCustomerInfo(null); 
+                } 
+              }}
               className="h-10 px-4 bg-red-500/10 text-red-100 font-bold rounded-lg border border-red-500/20 hover:bg-red-500/20 text-xs transition-colors"
             >
               CLEAR
