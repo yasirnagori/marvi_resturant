@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Printer, Plus, User, FileText, Scan, RefreshCcw, Phone, MapPin } from 'lucide-react';
 
-const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, onRemoveItem, onNewOrder, onCloseOrder, onParkOrder, orderType, rider, customerInfo }) => {
+const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, onRemoveItem, onNewOrder, onCloseOrder, onParkOrder, orderType, rider, waiter, riders, waiters, onSelectRider, onSelectWaiter, customerInfo }) => {
+    const [showDropdown, setShowDropdown] = useState(false);
     const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
 
     return (
@@ -44,8 +45,38 @@ const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, 
                 )}
 
                 <div className="grid grid-cols-[60px_1fr_30px] items-center gap-1 pt-1">
-                    <label className="text-gray-600">Waiter :</label>
-                    <input type="text" className="border border-gray-300 bg-white h-6 px-1 focus:outline-none" />
+                    <label className="text-gray-600">{orderType === 'Delivery' ? 'Rider :' : 'Waiter :'}</label>
+                    <div className="relative w-full">
+                        <button
+                            onClick={() => setShowDropdown(!showDropdown)}
+                            disabled={!orderType}
+                            className="w-full text-left border border-gray-300 bg-white h-6 px-1 focus:outline-none text-[10px] flex items-center justify-between disabled:bg-gray-100 disabled:text-gray-400"
+                        >
+                            <span className="truncate">
+                                {orderType === 'Delivery' 
+                                    ? (rider || 'Assign Rider') 
+                                    : (waiter || 'Assign Waiter')}
+                            </span>
+                            <span className="text-[8px] text-gray-500">▼</span>
+                        </button>
+                        {showDropdown && orderType && (
+                            <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-300 shadow-lg z-50 max-h-40 overflow-y-auto custom-scrollbar">
+                                {(orderType === 'Delivery' ? riders : waiters)?.map((person) => (
+                                    <button
+                                        key={person}
+                                        onClick={() => {
+                                            if (orderType === 'Delivery') onSelectRider(person);
+                                            else onSelectWaiter(person);
+                                            setShowDropdown(false);
+                                        }}
+                                        className="w-full text-left px-2 py-1.5 text-[11px] font-bold text-gray-700 hover:bg-blue-50 border-b border-gray-100 last:border-b-0"
+                                    >
+                                        {person}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <button className="border border-gray-300 bg-white h-6 flex items-center justify-center"><Printer size={14} /></button>
                 </div>
 

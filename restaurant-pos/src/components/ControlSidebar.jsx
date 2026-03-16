@@ -3,8 +3,6 @@ import * as LucideIcons from 'lucide-react';
 
 const ControlSidebar = ({ categories, selectedCategory, onSelectCategory, selectedCartItemId, onUpdateQty, onRemoveItem }) => {
     const topActions = [
-        { id: 'kot', label: 'KOT Reprint' },
-        { id: 'refund', label: 'Refund Item' },
         { id: 'remove', label: 'Remove Item', color: 'text-red-500', onClick: () => selectedCartItemId && onRemoveItem(selectedCartItemId) },
     ];
 
@@ -13,10 +11,7 @@ const ControlSidebar = ({ categories, selectedCategory, onSelectCategory, select
         { id: 'minus', label: '- QTY' },
     ];
 
-    const bottomActions = [
-        { id: 'note', label: 'Note' },
-        { id: 'kds', label: 'KDS' },
-    ];
+    const bottomActions = [];
 
     return (
         <div className="w-[320px] flex h-full border-r border-gray-400 shadow-lg">

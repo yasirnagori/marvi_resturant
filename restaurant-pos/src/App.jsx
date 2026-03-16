@@ -31,8 +31,6 @@ function App() {
   const [customerDatabase, setCustomerDatabase] = useState({}); // { phone: { name, address } }
   
   const [selectedWaiter, setSelectedWaiter] = useState(null);
-  const [showRiderSelect, setShowRiderSelect] = useState(false);
-  const [showWaiterSelect, setShowWaiterSelect] = useState(false);
 
   // Keypad State
   const [deliveryKeypadOpen, setDeliveryKeypadOpen] = useState(false);
@@ -230,6 +228,11 @@ function App() {
                 onParkOrder={handleParkOrder}
                 orderType={orderType}
                 rider={selectedRider}
+                waiter={selectedWaiter}
+                riders={riders}
+                waiters={waiters}
+                onSelectRider={setSelectedRider}
+                onSelectWaiter={setSelectedWaiter}
                 customerInfo={customerInfo}
               />
 
@@ -294,69 +297,6 @@ function App() {
             New Order
           </button>
           <div className="flex items-center gap-1 ml-2 relative">
-            {/* Rider / Waiter Logic block */}
-            {orderType === 'Delivery' && (
-              <>
-                <button
-                  className="h-10 px-4 font-bold rounded-lg border flex items-center gap-2 text-xs transition-all bg-orange-500 text-white border-orange-400 hover:bg-orange-600"
-                  onClick={() => setShowRiderSelect(!showRiderSelect)}
-                >
-                  <Truck size={16} /> ASSIGN RIDER {selectedRider ? `: ${selectedRider}` : ''}
-                </button>
-                {showRiderSelect && (
-                  <div className="absolute bottom-12 left-0 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-                    <div className="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-2 border-b border-gray-200">Select Rider</div>
-                    <div className="flex flex-col max-h-48 overflow-y-auto">
-                      {riders.map((r) => (
-                        <button
-                          key={r}
-                          className="px-3 py-2 text-left text-sm font-semibold hover:bg-blue-50 text-gray-800 border-b border-gray-100 last:border-0"
-                          onClick={() => { setSelectedRider(r); setShowRiderSelect(false); }}
-                        >
-                          {r}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {orderType === 'Dine In' && (
-              <>
-                <button
-                  className="h-10 px-4 font-bold rounded-lg border flex items-center gap-2 text-xs transition-all bg-purple-500 text-white border-purple-400 hover:bg-purple-600"
-                  onClick={() => setShowWaiterSelect(!showWaiterSelect)}
-                >
-                  <Truck size={16} /> ASSIGN WAITER {selectedWaiter ? `: ${selectedWaiter}` : ''}
-                </button>
-                {showWaiterSelect && (
-                  <div className="absolute bottom-12 left-0 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50">
-                    <div className="bg-gray-100 text-gray-700 text-xs font-bold px-3 py-2 border-b border-gray-200">Select Waiter</div>
-                    <div className="flex flex-col">
-                      {waiters.map((w) => (
-                        <button
-                          key={w}
-                          className="px-3 py-2 text-left text-sm font-semibold hover:bg-blue-50 text-gray-800 border-b border-gray-100 last:border-0"
-                          onClick={() => { setSelectedWaiter(w); setShowWaiterSelect(false); }}
-                        >
-                          {w}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {orderType !== 'Delivery' && orderType !== 'Dine In' && (
-              <button
-                className="h-10 px-4 font-bold rounded-lg border flex items-center gap-2 text-xs transition-all bg-blue-800/50 text-white/50 border-blue-700/50 cursor-not-allowed"
-                disabled
-              >
-                <Truck size={16} /> ASSIGN...
-              </button>
-            )}
             <button
               className="h-10 px-4 bg-blue-800 text-white font-bold rounded-lg border border-blue-700 hover:bg-blue-700 text-xs transition-colors"
               onClick={() => alert("Payment Process Started...")}
