@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Printer, Plus, User, FileText, Scan, RefreshCcw, Phone, MapPin } from 'lucide-react';
 
-const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, onRemoveItem, onNewOrder, onCloseOrder, onParkOrder, orderType, rider, waiter, riders, waiters, onSelectRider, onSelectWaiter, customerInfo }) => {
+const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, onRemoveItem, onNewOrder, onCloseOrder, onParkOrder, orderType, activeOrderId, startTime, rider, waiter, riders, waiters, onSelectRider, onSelectWaiter, customerInfo }) => {
     const [showDropdown, setShowDropdown] = useState(false);
+    const [receivedAmount, setReceivedAmount] = useState('');
     const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
+
+    // Reset received amount when the active order changes or closes
+    useEffect(() => {
+        setReceivedAmount('');
+    }, [activeOrderId]);
 
     return (
         <div className="w-[380px] flex flex-col h-full bg-[#f1f5f9] border-r border-gray-400">
             {/* Header Info */}
             <div className="p-2 space-y-1 text-xs font-bold border-b border-gray-300">
                 <div className="flex justify-between">
-                    <span>Order No : <span className="text-gray-700 italic">{orderType ? `SL${Date.now().toString().slice(-4)}` : 'N/A'}</span></span>
+                    <span>Order No : <span className="text-gray-700 italic">{orderType ? (activeOrderId || 'N/A') : 'N/A'}</span></span>
                     <span className={`text-[10px] font-black uppercase ${orderType ? 'text-green-600' : 'text-red-500'}`}>
                         {orderType ? `[ ${orderType}${rider ? ` - ${rider}` : ''} ]` : '[ NO ACTIVE SESSION ]'}
                     </span>
                 </div>
                 <div className="flex justify-between items-center">
-                    <span className="text-gray-500">Start : {orderType ? new Date().toLocaleTimeString() : '--:--:--'}</span>
+                    <span className="text-gray-500">Start : {orderType ? (startTime || '--:--:--') : '--:--:--'}</span>
                     {orderType && (
                         <button
                             onClick={onParkOrder}
@@ -85,11 +91,6 @@ const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, 
                     <input type="text" className="border border-gray-300 bg-white h-6 px-1 focus:outline-none" />
                 </div>
 
-                <div className="grid grid-cols-[60px_1fr_30px] items-center gap-1">
-                    <label className="text-gray-600">Scan :</label>
-                    <input type="text" className="border border-gray-300 bg-white h-6 px-1 focus:outline-none" />
-                    <button className="bg-green-600 text-white h-6 flex items-center justify-center rounded"><Plus size={14} /></button>
-                </div>
             </div>
 
             {/* Cart Table */}
@@ -132,17 +133,30 @@ const OrderPanel = ({ cartItems, selectedCartItemId, onSelectItem, onUpdateQty, 
 
             {/* Totals Section */}
             <div className="p-2 border-t border-gray-400 bg-gray-100 font-bold text-xs space-y-1">
-                <div className="flex justify-between">
-                    <span>Sub Total :</span>
-                    <span>{subtotal}</span>
+                <div className="flex justify-between border-b border-gray-200 pb-1">
+                    <span className="text-gray-600">Sub Total :</span>
+                    <span className="text-gray-800">{subtotal}</span>
                 </div>
-                <div className="flex items-center justify-between">
-                    <span>Received :</span>
+                <div className="flex justify-between text-base">
+                    <span className="text-blue-900">Total :</span>
+                    <span className="text-blue-900 font-black">{subtotal}</span>
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                    <span className="text-gray-600">Received :</span>
                     <div className="flex items-center gap-2">
-                        <span className="text-gray-500 font-normal">Cash</span>
-                        <span>0</span>
-                        <button className="bg-green-600 text-white rounded-[2px] p-[2px]"><Plus size={12} /></button>
+                        <span className="text-[10px] text-gray-500 font-normal">Cash</span>
+                        <input 
+                            type="number" 
+                            className="w-20 border border-gray-300 rounded px-1 text-right text-gray-800 h-6 focus:outline-blue-500" 
+                            placeholder="0"
+                            value={receivedAmount}
+                            onChange={(e) => setReceivedAmount(e.target.value)}
+                        />
                     </div>
+                </div>
+                <div className="flex items-center justify-between text-red-600 border-t border-gray-200 pt-1">
+                    <span>Return :</span>
+                    <span>{receivedAmount ? Math.max(0, Number(receivedAmount) - subtotal) : 0}</span>
                 </div>
             </div>
 

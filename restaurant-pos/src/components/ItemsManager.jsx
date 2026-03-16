@@ -3,7 +3,7 @@ import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
 
 const ItemsManager = ({ items, categories, onAddItem, onUpdateItem, onRemoveItem }) => {
     const [isAdding, setIsAdding] = useState(false);
-    const [newItem, setNewItem] = useState({ name: '', price: '', categoryId: categories[0]?.id });
+    const [newItem, setNewItem] = useState({ name: '', price: '', categoryId: categories[0]?.id, image: '' });
     const [editingId, setEditingId] = useState(null);
     const [editValues, setEditValues] = useState({});
 
@@ -11,7 +11,7 @@ const ItemsManager = ({ items, categories, onAddItem, onUpdateItem, onRemoveItem
         e.preventDefault();
         if (!newItem.name || !newItem.price) return;
         onAddItem({ ...newItem, id: Date.now(), price: Number(newItem.price) });
-        setNewItem({ name: '', price: '', categoryId: categories[0]?.id });
+        setNewItem({ name: '', price: '', categoryId: categories[0]?.id, image: '' });
         setIsAdding(false);
     };
 
@@ -38,42 +38,71 @@ const ItemsManager = ({ items, categories, onAddItem, onUpdateItem, onRemoveItem
             </div>
 
             {isAdding && (
-                <form onSubmit={handleAddSubmit} className="bg-blue-50 p-4 border border-blue-200 rounded-lg mb-4 flex gap-4 items-end">
-                    <div className="flex-1">
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Item Name</label>
-                        <input
-                            type="text"
-                            className="w-full border p-2 rounded"
-                            value={newItem.name}
-                            onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="w-32">
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Price (Rs.)</label>
-                        <input
-                            type="number"
-                            className="w-full border p-2 rounded"
-                            value={newItem.price}
-                            onChange={e => setNewItem({ ...newItem, price: e.target.value })}
-                            required
-                        />
-                    </div>
-                    <div className="w-48">
-                        <label className="block text-xs font-bold text-gray-600 mb-1">Category</label>
-                        <select
-                            className="w-full border p-2 rounded"
-                            value={newItem.categoryId}
-                            onChange={e => setNewItem({ ...newItem, categoryId: e.target.value })}
-                        >
-                            {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex gap-2">
-                        <button type="submit" className="bg-green-600 text-white p-2 rounded hover:bg-green-700"><Save size={20} /></button>
-                        <button type="button" onClick={() => setIsAdding(false)} className="bg-gray-400 text-white p-2 rounded hover:bg-gray-500"><X size={20} /></button>
-                    </div>
-                </form>
+                <div className="bg-blue-50 p-4 border border-blue-200 rounded-lg mb-4 flex flex-col gap-4">
+                    <form onSubmit={handleAddSubmit} className="flex gap-4 items-end">
+                        <div className="flex-1">
+                            <label className="block text-xs font-bold text-gray-600 mb-1">Item Name</label>
+                            <input
+                                type="text"
+                                className="w-full border p-2 rounded"
+                                value={newItem.name}
+                                onChange={e => setNewItem({ ...newItem, name: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="w-32">
+                            <label className="block text-xs font-bold text-gray-600 mb-1">Price (Rs.)</label>
+                            <input
+                                type="number"
+                                className="w-full border p-2 rounded"
+                                value={newItem.price}
+                                onChange={e => setNewItem({ ...newItem, price: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className="w-48">
+                            <label className="block text-xs font-bold text-gray-600 mb-1">Category</label>
+                            <select
+                                className="w-full border p-2 rounded"
+                                value={newItem.categoryId}
+                                onChange={e => setNewItem({ ...newItem, categoryId: e.target.value })}
+                            >
+                                {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="flex flex-col items-center">
+                            <label className="block text-[10px] font-bold text-gray-600 mb-1">Image (Optional)</label>
+                            <div className="relative w-14 h-11 border-2 border-dashed rounded flex flex-col items-center justify-center transition-all border-gray-400 bg-white hover:bg-gray-50 overflow-hidden cursor-pointer">
+                                {newItem.image ? (
+                                   <div className="w-full h-full p-0.5"><img src={newItem.image} alt="preview" className="w-full h-full object-cover rounded-sm" /></div>
+                                ) : (
+                                   <span className="text-[10px] font-bold text-gray-400 text-center leading-tight">Pick<br/>Image</span>
+                                )}
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                    title="Select an image from D:\Software Items Pictures"
+                                    onChange={(e) => {
+                                        if (e.target.files && e.target.files[0]) {
+                                            const file = e.target.files[0];
+                                            const reader = new FileReader();
+                                            reader.onload = (ev) => {
+                                                setNewItem({ ...newItem, image: ev.target.result });
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <button type="submit" className="bg-green-600 text-white p-2 rounded hover:bg-green-700 h-10 w-10 flex items-center justify-center"><Save size={20} /></button>
+                            <button type="button" onClick={() => setIsAdding(false)} className="bg-gray-400 text-white p-2 rounded hover:bg-gray-500 h-10 w-10 flex items-center justify-center"><X size={20} /></button>
+                        </div>
+                    </form>
+
+                </div>
             )}
 
             <div className="flex-1 overflow-auto border border-gray-200 rounded-lg">

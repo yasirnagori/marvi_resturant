@@ -23,6 +23,13 @@ function App() {
   const [cartItems, setCartItems] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [orderType, setOrderType] = useState(null); // null means no active order session
+  
+  // Daily Sequential ID Tracker
+  const [dailyOrderCount, setDailyOrderCount] = useState(0);
+  const [currentDate, setCurrentDate] = useState(new Date().toDateString());
+  
+  const [activeOrderId, setActiveOrderId] = useState(null);
+  const [startTime, setStartTime] = useState(null);
   const [selectedRider, setSelectedRider] = useState(null);
   const [customerInfo, setCustomerInfo] = useState(null); // stores {name, phone, address}
   const [selectedCartItemId, setSelectedCartItemId] = useState(null);
@@ -105,6 +112,8 @@ function App() {
         handleParkOrder(); 
       } else {
         setOrderType(null);
+        setActiveOrderId(null);
+        setStartTime(null);
         setSelectedRider(null);
         setSelectedWaiter(null);
         setCustomerInfo(null);
@@ -114,7 +123,17 @@ function App() {
   };
 
   const handleSelectOrderType = (type, rider = null, custInfo = null) => {
+    const today = new Date().toDateString();
+    let nextCount = dailyOrderCount + 1;
+    if (today !== currentDate) {
+        nextCount = 1;
+        setCurrentDate(today);
+    }
+    setDailyOrderCount(nextCount);
+
     setOrderType(type);
+    setActiveOrderId(nextCount);
+    setStartTime(new Date().toLocaleTimeString());
     setSelectedRider(rider);
     setSelectedWaiter(null);
     setCustomerInfo(custInfo);
@@ -149,16 +168,21 @@ function App() {
   const handleCloseOrder = () => {
     if (!orderType || cartItems.length === 0) return;
     const newOrder = {
-      id: `SL${Date.now().toString().slice(-8)}`,
+      id: activeOrderId,
       type: orderType,
       itemsCount: cartItems.reduce((acc, i) => acc + i.qty, 0),
       total: cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0),
       rider: selectedRider,
-      waiter: selectedWaiter
+      waiter: selectedWaiter,
+      cartItems: [...cartItems],
+      customerInfo: customerInfo,
+      time: startTime || new Date().toLocaleTimeString()
     };
     setCompletedOrders(prev => [newOrder, ...prev]);
     setCartItems([]);
     setOrderType(null);
+    setActiveOrderId(null);
+    setStartTime(null);
     setSelectedRider(null);
     setSelectedWaiter(null);
     alert("Order Closed Successfully!");
@@ -167,22 +191,31 @@ function App() {
   const handleParkOrder = () => {
     if (!orderType || cartItems.length === 0) return;
     const parkedOrder = {
-      id: `PK${Date.now().toString().slice(-6)}`,
+      id: activeOrderId,
       type: orderType,
       rider: selectedRider,
       waiter: selectedWaiter,
       cartItems: [...cartItems],
-      time: new Date().toLocaleTimeString()
+      time: startTime || new Date().toLocaleTimeString()
     };
     setActiveOrders(prev => [parkedOrder, ...prev]);
     setOrderType(null);
+    setActiveOrderId(null);
+    setStartTime(null);
     setCartItems([]);
     setSelectedRider(null);
     setSelectedWaiter(null);
   };
 
   const resumeOrder = (order) => {
+    // If we are currently in an active order, park it first so we don't lose it
+    if (orderType) {
+        handleParkOrder();
+    }
+
     setOrderType(order.type);
+    setActiveOrderId(order.id);
+    setStartTime(order.time);
     setSelectedRider(order.rider);
     setSelectedWaiter(order.waiter);
     setCartItems(order.cartItems);
@@ -227,6 +260,8 @@ function App() {
                 onCloseOrder={handleCloseOrder}
                 onParkOrder={handleParkOrder}
                 orderType={orderType}
+                activeOrderId={activeOrderId}
+                startTime={startTime}
                 rider={selectedRider}
                 waiter={selectedWaiter}
                 riders={riders}
@@ -288,55 +323,72 @@ function App() {
       </div>
 
       {/* Global Action Footer */}
-      <div className="h-14 bg-gray-800 border-t border-gray-700 flex items-center justify-between px-4 gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleNewOrder}
-            className="h-10 px-6 bg-white text-blue-900 font-black rounded-lg hover:bg-gray-100 transition-all flex items-center gap-2 uppercase tracking-tight text-sm active:scale-95 shadow-sm"
-          >
-            New Order
-          </button>
-          <div className="flex items-center gap-1 ml-2 relative">
+      {activeTab === "Open Orders" && (
+        <div className="h-14 bg-gray-800 border-t border-gray-700 flex items-center justify-between px-4 gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.1)]">
+          <div className="flex items-center gap-2">
             <button
-              className="h-10 px-4 bg-blue-800 text-white font-bold rounded-lg border border-blue-700 hover:bg-blue-700 text-xs transition-colors"
-              onClick={() => alert("Payment Process Started...")}
+              onClick={handleNewOrder}
+              className="h-10 px-6 bg-white text-blue-900 font-black rounded-lg hover:bg-gray-100 transition-all flex items-center gap-2 uppercase tracking-tight text-sm active:scale-95 shadow-sm"
             >
-              PAYMENT
+              New Order
+            </button>
+            <div className="flex items-center gap-1 ml-2 relative">
+              <button
+                className="h-10 px-4 bg-blue-800 text-white font-bold rounded-lg border border-blue-700 hover:bg-blue-700 text-xs transition-colors"
+                onClick={() => alert("Payment Process Started...")}
+              >
+                PAYMENT
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                alert("Printing Bill...");
+                if (orderType === 'Dine In') {
+                  handleCloseOrder();
+                }
+              }}
+              className="h-10 px-4 bg-white/10 text-white font-bold rounded-lg border border-white/20 hover:bg-white/20 text-xs transition-colors"
+            >
+              PRINT BILL
+            </button>
+            <button
+              onClick={() => {
+                alert("Printing Token...");
+                if (orderType === 'Take Away') {
+                  handleCloseOrder();
+                }
+              }}
+              className="h-10 px-4 bg-white/10 text-white font-bold rounded-lg border border-white/20 hover:bg-white/20 text-xs transition-colors"
+            >
+              PRINT TOKEN
+            </button>
+            <button
+              onClick={() => {
+                if (orderType === 'Delivery') {
+                  alert("Printing Token and Bill for Delivery...");
+                }
+                handleCloseOrder();
+              }}
+              className={`h-10 px-8 font-black rounded-lg transition-all flex items-center gap-2 uppercase tracking-tight text-sm active:scale-95 ${cartItems.length > 0
+                ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg'
+                : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                }`}
+              disabled={cartItems.length === 0}
+            >
+              CLOSE ORDER
+            </button>
+            <button
+              onClick={() => { if (confirm("Clear current order?")) { setCartItems([]); setOrderType(null); setSelectedRider(null); setSelectedWaiter(null); setCustomerInfo(null); } }}
+              className="h-10 px-4 bg-red-500/10 text-red-100 font-bold rounded-lg border border-red-500/20 hover:bg-red-500/20 text-xs transition-colors"
+            >
+              CLEAR
             </button>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => alert("Printing Bill...")}
-            className="h-10 px-4 bg-white/10 text-white font-bold rounded-lg border border-white/20 hover:bg-white/20 text-xs transition-colors"
-          >
-            PRINT BILL
-          </button>
-          <button
-            onClick={() => alert("Printing Token...")}
-            className="h-10 px-4 bg-white/10 text-white font-bold rounded-lg border border-white/20 hover:bg-white/20 text-xs transition-colors"
-          >
-            PRINT TOKEN
-          </button>
-          <button
-            onClick={handleCloseOrder}
-            className={`h-10 px-8 font-black rounded-lg transition-all flex items-center gap-2 uppercase tracking-tight text-sm active:scale-95 ${cartItems.length > 0
-              ? 'bg-green-500 text-white hover:bg-green-600 shadow-lg'
-              : 'bg-gray-400 text-gray-200 cursor-not-allowed'
-              }`}
-            disabled={cartItems.length === 0}
-          >
-            CLOSE ORDER
-          </button>
-          <button
-            onClick={() => { if (confirm("Clear current order?")) { setCartItems([]); setOrderType(null); setSelectedRider(null); setSelectedWaiter(null); setCustomerInfo(null); } }}
-            className="h-10 px-4 bg-red-500/10 text-red-100 font-bold rounded-lg border border-red-500/20 hover:bg-red-500/20 text-xs transition-colors"
-          >
-            CLEAR
-          </button>
-        </div>
-      </div>
+      )}
 
       {/* New Order Modal Overlay */}
       <NewOrderModal

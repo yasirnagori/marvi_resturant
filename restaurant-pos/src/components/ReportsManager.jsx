@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { BarChart3, Filter, Bike, Search, Utensils, ShoppingBag } from 'lucide-react';
+import { BarChart3, Filter, Bike, Search, Utensils, ChevronDown, ChevronUp } from 'lucide-react';
 
 const ReportsManager = ({ orders = [] }) => {
     const [filterType, setFilterType] = useState('All');
     const [selectedRider, setSelectedRider] = useState('All');
+    const [expandedOrderId, setExpandedOrderId] = useState(null);
 
-    const riders = ["Anas", "Junaid", "Samad", "Nabore", "Punjabi"];
+    const riders = ["Anas", "Junaid", "Samad", "Nagori", "Punjabi"];
 
     const filteredOrders = orders.filter(order => {
         if (filterType !== 'All' && order.type !== filterType) return false;
@@ -78,30 +79,83 @@ const ReportsManager = ({ orders = [] }) => {
                     <div className="bg-gray-100 p-3 border-b text-[10px] font-black uppercase tracking-widest text-gray-600">Order Logs</div>
                     <div className="flex-1 overflow-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-[#1e3a8a] text-white sticky top-0 uppercase text-[10px] font-black tracking-widest">
+                            <thead className="bg-[#1e3a8a] text-white sticky top-0 uppercase text-[10px] font-black tracking-widest z-10">
                                 <tr>
                                     <th className="p-3">Order ID</th>
                                     <th className="p-3">Type</th>
                                     <th className="p-3">Items</th>
-                                    <th className="p-3">Rider</th>
+                                    <th className="p-3">Rider/Waiter</th>
                                     <th className="p-3 text-right">Total</th>
+                                    <th className="p-3 text-center w-10"></th>
                                 </tr>
                             </thead>
                             <tbody className="text-xs">
                                 {filteredOrders.length > 0 ? filteredOrders.map(order => (
-                                    <tr key={order.id} className="border-b hover:bg-blue-50 transition-colors">
-                                        <td className="p-3 font-mono text-blue-800">{order.id}</td>
-                                        <td className="p-3">
-                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${order.type === 'Dine In' ? 'bg-orange-100 text-orange-700' :
-                                                    order.type === 'Take Away' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
-                                                }`}>
-                                                {order.type}
-                                            </span>
-                                        </td>
-                                        <td className="p-3 text-gray-600">{order.itemsCount} items</td>
-                                        <td className="p-3">{order.rider || '-'}</td>
-                                        <td className="p-3 text-right font-black">Rs. {order.total.toLocaleString()}</td>
-                                    </tr>
+                                    <React.Fragment key={order.id}>
+                                        <tr 
+                                            className={`border-b transition-colors cursor-pointer ${expandedOrderId === order.id ? 'bg-blue-50' : 'hover:bg-blue-50/50'}`}
+                                            onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                                        >
+                                            <td className="p-3 font-mono text-blue-800 font-bold">{order.id}</td>
+                                            <td className="p-3">
+                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${order.type === 'Dine In' ? 'bg-orange-100 text-orange-700' :
+                                                        order.type === 'Take Away' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
+                                                    }`}>
+                                                    {order.type}
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-gray-600 font-bold">{order.cartItems ? order.cartItems.length : order.itemsCount} items</td>
+                                            <td className="p-3 font-medium">{order.rider || order.waiter || '-'}</td>
+                                            <td className="p-3 text-right font-black text-green-700">Rs. {order.total.toLocaleString()}</td>
+                                            <td className="p-3 text-center text-gray-400">
+                                                {expandedOrderId === order.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                                            </td>
+                                        </tr>
+                                        {expandedOrderId === order.id && (
+                                            <tr className="bg-gray-50 border-b border-blue-200">
+                                                <td colSpan="6" className="p-4">
+                                                    <div className="flex gap-6">
+                                                        <div className="flex-[2] bg-white border rounded p-3">
+                                                            <h4 className="text-[10px] font-black uppercase text-gray-500 mb-2 border-b pb-1">Order Items</h4>
+                                                            <div className="space-y-1">
+                                                                {order.cartItems ? order.cartItems.map((item, idx) => (
+                                                                    <div key={idx} className="flex justify-between text-xs py-1 border-b border-dashed border-gray-200 last:border-0">
+                                                                        <span className="font-medium text-gray-700">{item.qty}x {item.name}</span>
+                                                                        <span className="font-bold text-gray-600">{(item.price * item.qty).toLocaleString()}</span>
+                                                                    </div>
+                                                                )) : <span className="text-xs text-gray-400 italic">Item details not available in log</span>}
+                                                            </div>
+                                                            <div className="flex justify-between text-xs font-black mt-2 pt-2 border-t">
+                                                                <span>TOTAL AMOUNT</span>
+                                                                <span className="text-green-600">Rs. {order.total.toLocaleString()}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex-1 bg-white border rounded p-3 flex flex-col gap-3">
+                                                            <div>
+                                                                <h4 className="text-[10px] font-black uppercase text-gray-500 mb-1">Order Details</h4>
+                                                                <p className="text-xs font-medium"><span className="text-gray-400">Time:</span> {order.time || 'N/A'}</p>
+                                                                <p className="text-xs font-medium"><span className="text-gray-400">Status:</span> Completed</p>
+                                                            </div>
+                                                            {order.customerInfo && (
+                                                                <div className="pt-2 border-t">
+                                                                    <h4 className="text-[10px] font-black uppercase text-gray-500 mb-1">Customer Info</h4>
+                                                                    <p className="text-xs font-bold text-gray-800">{order.customerInfo.name}</p>
+                                                                    <p className="text-[10px] font-medium text-gray-600">{order.customerInfo.phone}</p>
+                                                                    <p className="text-[10px] text-gray-500 mt-0.5 leading-tight">{order.customerInfo.address}</p>
+                                                                </div>
+                                                            )}
+                                                            {order.rider && (
+                                                                 <div className="pt-2 border-t">
+                                                                 <h4 className="text-[10px] font-black uppercase text-gray-500 mb-1">Assigned Rider</h4>
+                                                                 <p className="text-xs font-bold text-blue-800 flex items-center gap-1"><Bike size={12}/> {order.rider}</p>
+                                                             </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
                                 )) : (
                                     <tr>
                                         <td colSpan="5" className="p-20 text-center text-gray-400 italic">No orders found for this selection</td>

@@ -25,11 +25,6 @@ const ItemGrid = ({ items, cartItems = [], onAddToCart }) => {
                         />
                     </div>
                 </div>
-
-                <div className="flex items-center gap-1 bg-white border border-gray-300 px-2 py-1 rounded text-green-700 text-[10px] font-bold">
-                    <Monitor size={12} />
-                    <span>Online</span>
-                </div>
             </div>
 
             {/* Grid */}
